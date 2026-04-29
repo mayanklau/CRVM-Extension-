@@ -1,6 +1,6 @@
 # CRVM Attack Path Control Center
 
-Production-grade starter product for extending EY CRVM from vulnerability counting into attack-path risk reduction planning.
+Production-grade product for extending EY CRVM from vulnerability counting into attack-path risk reduction, connector validation, approval workflow, and executive reporting.
 
 ## What It Does
 
@@ -8,6 +8,20 @@ Production-grade starter product for extending EY CRVM from vulnerability counti
 - Recommends firewall, SIEM, IAM, EDR, patching, and governance actions.
 - Simulates residual severity after compensating controls.
 - Creates management-ready risk reduction views without hiding original severity.
+- Connects the operating model for Wiz, ServiceNow, Splunk, Microsoft Sentinel, Palo Alto, Check Point, AWS Security Groups, Azure NSGs, Jira, Tenable, and Qualys.
+- Tracks automated infrastructure-as-code pull request references for firewall, cloud firewall, and IAM changes.
+- Includes approval workflow, RBAC roles, owner notifications, LLM-assisted executive briefs, drift monitoring, and real-time validation states.
+
+## Product Modules
+
+- Attack path dashboard
+- Residual risk and severity degradation engine
+- Connector health control plane
+- IaC pull request orchestration
+- Approval workflow and RBAC lane
+- Asset owner notification queue
+- Executive brief generator
+- Continuous drift and validation monitor
 
 ## Run Locally
 
