@@ -1,11 +1,6 @@
 import type { AttackPath, ControlRecommendation, Finding, PortfolioSummary, RiskResult, Severity } from "./types";
 
-const severityFloor: Record<Severity, number> = {
-  Critical: 9,
-  High: 7,
-  Medium: 4,
-  Low: 1
-};
+const severityFloor: Record<Severity, number> = { Critical: 9, High: 7, Medium: 4, Low: 1 };
 
 export function scoreToSeverity(score: number): Severity {
   if (score >= 9) return "Critical";
@@ -29,17 +24,19 @@ export function calculateResidualRisk(finding: Finding, selectedControls: Contro
   const hasNetworkBreak = selectedControls.some((control) => control.type === "Firewall" || control.type === "IAM");
   const hasDetection = selectedControls.some((control) => control.type === "SIEM");
   const hasPatch = selectedControls.some((control) => control.type === "Patch");
+  const hasVirtualPatch = selectedControls.some((control) => control.type === "Virtual Patch");
   const hasGovernance = selectedControls.some((control) => control.type === "Risk Acceptance");
   const patchMandatory = finding.internetExposed && finding.exploitAvailable && finding.rawSeverity === "Critical";
   let residualScore = inherentScore - totalReduction;
 
   if (hasPatch) residualScore = Math.min(residualScore, 2.5);
+  if (hasVirtualPatch) residualScore = Math.min(residualScore, 7.4);
   if (finding.lateralMovement && !hasNetworkBreak) residualScore += 0.6;
   if (finding.exploitAvailable && !hasDetection && !hasPatch) residualScore += 0.4;
 
   residualScore = clampScore(residualScore);
   const residualSeverity = scoreToSeverity(residualScore);
-  const downgradeAllowed = !patchMandatory && residualSeverity !== finding.rawSeverity && selectedControls.length > 0 && (hasPatch || hasNetworkBreak || (hasDetection && hasGovernance));
+  const downgradeAllowed = (!patchMandatory || (hasVirtualPatch && hasDetection)) && residualSeverity !== finding.rawSeverity && selectedControls.length > 0 && (hasPatch || hasVirtualPatch || hasNetworkBreak || (hasDetection && hasGovernance));
 
   return {
     inherentScore,
@@ -84,6 +81,7 @@ function buildRationale(finding: Finding, selectedControls: ControlRecommendatio
   if (selectedControls.some((control) => control.type === "SIEM")) messages.push("SIEM coverage improves detection for mapped ATT&CK techniques.");
   if (selectedControls.some((control) => control.type === "IAM")) messages.push("IAM restriction reduces privilege escalation and lateral movement.");
   if (selectedControls.some((control) => control.type === "Patch")) messages.push("Patch removes the vulnerable condition and clears residual exposure.");
+  if (selectedControls.some((control) => control.type === "Virtual Patch")) messages.push("Virtual patch reduces immediate exploitability while permanent patch remains tracked.");
   if (downgradeAllowed) messages.push("Residual downgrade is allowed with owner, expiry, and evidence.");
   if (!downgradeAllowed && !patchMandatory && selectedControls.length > 0) messages.push("Selected controls reduce risk but do not yet meet downgrade governance.");
   if (messages.length === 0) messages.push(`${finding.rawSeverity} severity is retained until a strong control or patch is selected.`);
