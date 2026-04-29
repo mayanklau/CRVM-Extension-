@@ -1,4 +1,4 @@
-import type { ApprovalDecision, AttackPath, Connector, DriftSignal, ExecutiveBrief, OwnerNotification } from "./types";
+import type { ApprovalDecision, AttackPath, Connector, DriftSignal, EvidencePack, ExecutiveBrief, OwnerNotification, SlaInsight, VirtualPatchPlan } from "./types";
 
 export const attackPaths: AttackPath[] = [
   {
@@ -12,6 +12,7 @@ export const attackPaths: AttackPath[] = [
       { id: "finding-002", cve: "CVE-2023-3519", title: "Gateway appliance remote code execution", asset: "edge-vpn-02", service: "Corporate Access", source: "Wiz", rawSeverity: "Critical", cvss: 9.6, exploitAvailable: true, internetExposed: true, privilegedAsset: true, lateralMovement: true, businessCriticality: 5, techniques: ["T1190", "T1133", "T1021"], controls: ["MFA"] }
     ],
     recommendations: [
+      { id: "ctrl-vpatch-CVE-2024-3094", type: "Virtual Patch", title: "Deploy WAF virtual patch for CVE-2024-3094 exploit chain", description: "Block known exploit payload patterns, suspicious compression library probes, and API gateway command injection indicators at the edge.", owner: "AppSec Engineering", effort: "Low", reduction: 2.6, evidence: "WAF rule in block mode, benign traffic replay, exploit simulation blocked, and rollback rule prepared.", approvalStatus: "Approved", validationStatus: "Validated", lastValidated: "2026-04-30 00:31 IST", iacPullRequest: "waf-rules#419", notificationTarget: "AppSec Engineering" },
       { id: "ctrl-fw-payments-edge", type: "Firewall", title: "Restrict payment API management plane", description: "Allowlist management access and block direct east-west access from api-gateway-prod to payments-db-primary.", owner: "Network Security", effort: "Medium", reduction: 2.1, evidence: "Approved firewall change, before/after reachability test, and rule expiry review.", approvalStatus: "Approved", validationStatus: "Validated", lastValidated: "2026-04-30 00:14 IST", iacPullRequest: "infra-firewall#1842", notificationTarget: "Network Security" },
       { id: "ctrl-siem-t1190", type: "SIEM", title: "Detect public exploit chain activity", description: "Add detections for T1190, T1059, and suspicious API gateway child processes.", owner: "SOC Engineering", effort: "Low", reduction: 1.1, evidence: "SIEM rule ID, test event, alert routing, and tuning owner.", approvalStatus: "Approved", validationStatus: "Validated", lastValidated: "2026-04-30 00:18 IST", notificationTarget: "SOC Engineering" },
       { id: "ctrl-patch-CVE-2024-3094", type: "Patch", title: "Patch CVE-2024-3094 on api-gateway-prod", description: "Upgrade affected package and rebuild the public API gateway image.", owner: "Platform Engineering", effort: "High", reduction: 8.5, evidence: "Golden image build, vulnerability rescan, and deployment record.", mandatory: true, approvalStatus: "Pending Approval", validationStatus: "Pending Evidence", notificationTarget: "Platform Engineering" }
@@ -83,11 +84,29 @@ export const driftSignals: DriftSignal[] = [
 ];
 
 export const executiveBrief: ExecutiveBrief = {
-  headline: "CRVM risk is reduced by breaking exploitable paths, not by hiding vulnerability volume.",
-  narrative: "The platform preserves the full CRVM finding count, compares it with Wiz visibility, and shows which attack paths are actually exploitable. Controls are converted into approved firewall, SIEM, IAM, EDR, and patch actions with validation evidence. Critical internet-exposed findings remain patch-mandatory; other items can be downgraded only when compensating controls are approved and continuously validated.",
+  headline: "CRVM risk is reduced by breaking exploitable paths, virtual patching exposed services, and validating controls.",
+  narrative: "The platform preserves the full CRVM finding count, compares it with Wiz visibility, and shows which attack paths are actually exploitable. Controls are converted into approved virtual patch, firewall, SIEM, IAM, EDR, and patch actions with validation evidence. Critical internet-exposed findings can be immediately shielded by validated virtual patches while the permanent patch obligation remains tracked.",
   talkingPoints: [
     "Management sees path-level risk reduction instead of thousands of ungrouped vulnerabilities.",
-    "Security teams get owner-specific actions, approval status, and real-time evidence.",
+    "Security teams get owner-specific actions, approval status, WAF/IPS virtual patch state, and real-time evidence.",
     "Drift monitoring reopens risk when firewall, SIEM, or cloud controls stop matching the approved state."
   ]
 };
+
+export const virtualPatchPlans: VirtualPatchPlan[] = [
+  { id: "vp-001", cve: "CVE-2024-3094", asset: "api-gateway-prod", enforcementPoint: "WAF", ruleName: "block-xz-backdoor-probe-and-shell-spawn", mode: "Block", confidence: 92, falsePositiveRisk: "Low", rollbackPlan: "Disable rule group waf-rules#419 and retain SIEM alert-only detection for 24 hours.", expiry: "2026-05-07" },
+  { id: "vp-002", cve: "CVE-2023-3519", asset: "edge-vpn-02", enforcementPoint: "IPS", ruleName: "citrix-gateway-rce-payload-deny", mode: "Block", confidence: 88, falsePositiveRisk: "Medium", rollbackPlan: "Revert IPS signature override after emergency VPN patch window completes.", expiry: "2026-05-03" },
+  { id: "vp-003", cve: "CVE-2023-21716", asset: "erp-admin-ws-07", enforcementPoint: "EDR", ruleName: "office-parser-child-process-containment", mode: "Monitor", confidence: 74, falsePositiveRisk: "Low", rollbackPlan: "Keep EDR rule in monitor mode until finance confirms macro workflow impact.", expiry: "2026-05-10" }
+];
+
+export const evidencePacks: EvidencePack[] = [
+  { id: "evidence-001", title: "Payment API emergency shield", owner: "AppSec Engineering", completeness: 91, artifacts: ["WAF block logs", "Exploit replay result", "Firewall reachability test", "ServiceNow approval"] },
+  { id: "evidence-002", title: "Claims workload privilege reduction", owner: "Cloud Platform", completeness: 83, artifacts: ["IAM diff", "Access Analyzer output", "Kubernetes regression test", "CloudTrail validation"] },
+  { id: "evidence-003", title: "ERP workstation exception pack", owner: "Application Risk Owner", completeness: 57, artifacts: ["Patch ticket", "EDR monitor rule", "Owner approval pending"] }
+];
+
+export const slaInsights: SlaInsight[] = [
+  { id: "sla-001", queue: "Internet-exposed criticals", atRisk: 2, breached: 0, nextAction: "Keep virtual patch in block mode until permanent patch is deployed." },
+  { id: "sla-002", queue: "Pending evidence", atRisk: 4, breached: 1, nextAction: "Escalate missing ERP detection evidence to application owner." },
+  { id: "sla-003", queue: "Drift remediation", atRisk: 1, breached: 0, nextAction: "Close reopened AWS Security Group egress path." }
+];
