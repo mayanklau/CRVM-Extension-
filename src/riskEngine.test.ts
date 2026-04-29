@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { approvalDecisions, attackPaths, connectors, driftSignals, executiveBrief, ownerNotifications } from "./data";
+import { approvalDecisions, attackPaths, connectors, driftSignals, evidencePacks, executiveBrief, ownerNotifications, slaInsights, virtualPatchPlans } from "./data";
 import { calculateInherentScore, calculateResidualRisk, scoreToSeverity, selectedControlsForFinding, summarizePortfolio } from "./riskEngine";
 
 describe("risk engine", () => {
@@ -67,5 +67,24 @@ describe("risk engine", () => {
     expect(ownerNotifications.length).toBeGreaterThan(0);
     expect(executiveBrief.talkingPoints).toHaveLength(3);
     expect(driftSignals.some((signal) => signal.status === "Drift Detected")).toBe(true);
+  });
+
+  it("models virtual patching as immediate mitigation while permanent patch remains mandatory", () => {
+    const path = attackPaths[0];
+    const finding = path.findings[0];
+    const virtualPatch = path.recommendations.find((control) => control.type === "Virtual Patch");
+    const siem = path.recommendations.find((control) => control.type === "SIEM");
+    expect(virtualPatch).toBeDefined();
+    expect(siem).toBeDefined();
+    const result = calculateResidualRisk(finding, [virtualPatch!, siem!]);
+    expect(result.patchMandatory).toBe(true);
+    expect(result.downgradeAllowed).toBe(true);
+    expect(result.residualSeverity).not.toBe("Critical");
+  });
+
+  it("includes evidence packs and SLA heat insights as value-add modules", () => {
+    expect(virtualPatchPlans.some((plan) => plan.mode === "Block")).toBe(true);
+    expect(evidencePacks.some((pack) => pack.completeness >= 80)).toBe(true);
+    expect(slaInsights.some((insight) => insight.breached > 0)).toBe(true);
   });
 });
