@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { attackPaths } from "./data";
+import { approvalDecisions, attackPaths, connectors, driftSignals, executiveBrief, ownerNotifications } from "./data";
 import { calculateInherentScore, calculateResidualRisk, scoreToSeverity, selectedControlsForFinding, summarizePortfolio } from "./riskEngine";
 
 describe("risk engine", () => {
@@ -55,5 +55,17 @@ describe("risk engine", () => {
     const residual = calculateResidualRisk(finding, path.recommendations);
     expect(inherent).toBeLessThanOrEqual(10);
     expect(residual.residualScore).toBeGreaterThanOrEqual(0);
+  });
+
+  it("includes the required enterprise connectors", () => {
+    const connectorNames = new Set(connectors.map((connector) => connector.name));
+    ["Wiz", "ServiceNow", "Splunk", "Microsoft Sentinel", "Palo Alto", "Check Point", "AWS Security Groups", "Azure NSGs", "Jira", "Tenable", "Qualys"].forEach((name) => expect(connectorNames.has(name)).toBe(true));
+  });
+
+  it("models approval, notification, executive brief, and drift workflows", () => {
+    expect(approvalDecisions.some((decision) => decision.approver === "CISO")).toBe(true);
+    expect(ownerNotifications.length).toBeGreaterThan(0);
+    expect(executiveBrief.talkingPoints).toHaveLength(3);
+    expect(driftSignals.some((signal) => signal.status === "Drift Detected")).toBe(true);
   });
 });
