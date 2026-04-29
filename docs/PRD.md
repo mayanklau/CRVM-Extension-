@@ -1,4 +1,4 @@
-# CRVM Extension Product Requirements Document
+# CRVM Attack Path Control Center PRD
 
 ## Product Name
 
@@ -6,130 +6,88 @@ CRVM Attack Path Control Center
 
 ## Problem Statement
 
-Enterprise clients already use vulnerability platforms such as Wiz that report a smaller, prioritized vulnerability set. EY CRVM can discover a broader inventory, sometimes surfacing thousands of vulnerabilities. Security and management teams struggle to operationalize that volume, especially when patching everything is unrealistic.
+The client already has Wiz, which reports fewer vulnerabilities and is easier to explain to management. EY CRVM discovers broader exposure and can surface thousands of vulnerabilities, but a large raw count is hard to operationalize. The required product is not another vulnerability counter. It must reduce real exploitable risk by breaking attack paths, validating compensating controls, and proving residual severity reduction with governance.
 
-The client does not want another dashboard that only counts vulnerabilities. They need a capability that reduces exploitable risk by breaking attack paths through firewall changes, SIEM detection rules, compensating controls, exception governance, and risk scoring degradation when exposure is materially reduced. They are also concerned about MITRE ATT&CK / Mythos-style discovery and lateral movement paths that may not be obvious from raw CVE lists.
+## Product Positioning
 
-## Product Vision
+CRVM Attack Path Control Center turns CRVM into a control orchestration layer. It correlates Wiz, CRVM, SIEM, firewall, cloud firewall, ticketing, and vulnerability scanner signals, then recommends and tracks the fastest defensible action: patch, firewall change, SIEM detection, IAM restriction, EDR hardening, configuration change, or governed exception.
 
-Turn CRVM from a vulnerability reporting agent into a risk reduction planner that recommends the fastest defensible way to break attack paths, reduce severity, and create management-ready remediation plans.
+## Built Capabilities
 
-## Goals
+### Attack Path Risk Reduction
 
-- Reduce vulnerability overload by grouping findings into exploitable attack paths and business services.
-- Recommend compensating controls when patching is not immediately feasible.
-- Simulate how firewall changes, SIEM detections, EDR hardening, IAM restrictions, and segmentation reduce residual risk.
-- Provide management-friendly evidence showing why a vulnerability can be downgraded, accepted temporarily, or prioritized for patching.
-- Keep auditability: every downgrade must have a reason, control mapping, owner, expiry, and evidence requirement.
-- Complement Wiz rather than compete with it by enriching Wiz/CRVM findings with attack path and control recommendations.
+- Groups vulnerability findings by exploitable attack path and critical business service.
+- Preserves original vulnerability severity and calculates residual severity separately.
+- Prevents soft downgrades for internet-exposed critical exploited findings unless patched.
+- Shows compensating-control candidates when exploitability or blast radius can be materially reduced.
 
-## Non-Goals
+### Connector Control Plane
 
-- Replace Wiz, SIEM, firewall managers, ticketing systems, or patch management tools.
-- Automatically push firewall or SIEM changes without approval workflows.
-- Hide vulnerabilities without compensating controls and governance.
-- Claim a vulnerability is fixed when only exploitability has been reduced.
+Built connector coverage for Wiz, ServiceNow, Splunk, Microsoft Sentinel, Palo Alto, Check Point, AWS Security Groups, Azure NSGs, Jira, Tenable, and Qualys. Each connector tracks status, last sync, coverage, and capability so the platform can show whether a risk decision is backed by current evidence.
+
+### Automated IaC Pull Request Orchestration
+
+- Firewall, IAM, AWS Security Group, and Azure NSG controls can carry an infrastructure-as-code pull request reference.
+- The product models the PR as part of the control evidence package.
+- A control is not treated as validated until the PR, approval, and reachability evidence are present.
+
+### Approval Workflow and RBAC
+
+- Built role-aware approval lanes for CISO, vulnerability manager, SOC engineer, network engineer, and application owner.
+- Each risk decision has requester, approver, approval status, policy, and SLA metadata.
+- Risk acceptance requires CISO approval, expiry, and validated compensating controls.
+
+### Asset Owner Notification
+
+- Built owner notification queue across ServiceNow, Jira, Email, and Teams-style channels.
+- Notifications are tied to owners and operational messages such as firewall validation, detection evidence, and exception readiness.
+
+### LLM-Assisted Executive Brief
+
+- Generates a management-ready narrative explaining what risk was reduced, what remains patch-mandatory, and why CRVM volume is being converted into attack-path actions.
+- Keeps executive messaging grounded in the same control and validation data shown to operators.
+
+### Continuous Attack Path Drift Monitoring
+
+- Tracks drift signals by attack path and source system.
+- Reopens risk when firewall, SIEM, IAM, or cloud firewall controls no longer match the approved state.
+- Shows validated, drift detected, and pending evidence states.
+
+### Real-Time Validation
+
+- Models real-time validation from SIEM and firewall APIs through connector status, last sync, control evidence, and drift events.
+- Separates selected controls from validated controls so management cannot confuse intent with implemented risk reduction.
 
 ## Target Users
 
-- CISO / security leadership: wants a reduced, defensible risk posture.
-- Vulnerability manager: needs prioritization and remediation planning.
-- SOC engineer: needs detection logic and SIEM rule updates.
-- Network security engineer: needs firewall / segmentation changes.
-- Application owner: needs clear remediation recommendations and deadlines.
-- Auditor / risk committee: needs evidence for downgraded severity and exceptions.
+- CISO: needs an executive view of risk reduction and governance.
+- Vulnerability manager: needs path-based prioritization and defensible residual severity.
+- SOC engineer: needs detection-rule changes and validation evidence.
+- Network security engineer: needs firewall and segmentation breakpoints.
+- Cloud platform engineer: needs AWS Security Group, Azure NSG, and IAM change tracking.
+- Application owner: needs approval tasks, patch obligations, and exception context.
+- Auditor / risk committee: needs evidence, owner, expiry, approval, and validation trail.
 
-## Core Use Cases
+## Core Workflows
 
-1. As a vulnerability manager, I can ingest or view CRVM findings and see the attack paths they participate in.
-2. As a SOC engineer, I can see recommended SIEM rules mapped to MITRE ATT&CK techniques.
-3. As a network security engineer, I can see firewall rule recommendations that break internet exposure or lateral movement.
-4. As a CISO, I can compare raw severity against residual severity after controls.
-5. As an application owner, I can see whether the required action is patching, configuration hardening, segmentation, detection, or exception approval.
-6. As an auditor, I can see why severity was downgraded, what evidence supports it, and when the exception expires.
+1. Ingest CRVM, Wiz, Tenable, and Qualys findings.
+2. Group findings into attack paths and business services.
+3. Recommend breakpoints across firewall, SIEM, IAM, EDR, patching, and configuration.
+4. Generate IaC pull request references for network and cloud-firewall changes.
+5. Route approvals using RBAC policy.
+6. Notify asset owners through ticketing or collaboration channels.
+7. Validate controls through SIEM/firewall/cloud connector evidence.
+8. Recalculate residual severity and executive impact.
+9. Monitor for drift and reopen risk if controls degrade.
 
-## MVP Scope
+## Acceptance Criteria
 
-### 1. Attack Path Graph
-
-- Display assets, entry points, identities, and critical business services.
-- Show vulnerability count by attack path rather than flat CVE count.
-- Highlight paths with internet exposure, privilege escalation, lateral movement, or critical data access.
-
-### 2. Risk Degradation Simulator
-
-- Calculate inherent score from severity, exploitability, exposure, asset criticality, and lateral movement potential.
-- Calculate residual score after selected compensating controls.
-- Show severity downgrade only when controls materially reduce exploitability or blast radius.
-- Preserve original severity and distinguish it from residual severity.
-
-### 3. Control Recommendation Engine
-
-Recommend actions across patching, firewall, SIEM, EDR, IAM, configuration hardening, and temporary risk acceptance. Each recommendation includes expected risk reduction, owner, effort, evidence, and approval requirement.
-
-### 4. Management Summary
-
-- Show total raw vulnerabilities.
-- Show prioritized attack paths.
-- Show risk reduced without immediate patching.
-- Show mandatory patch items that cannot be safely downgraded.
-- Show control backlog by owner.
-
-### 5. Governance
-
-- Every downgrade requires a selected control, evidence, owner, and expiry.
-- Controls expire automatically and return findings to prior residual state if not revalidated.
-- Audit log records the rationale for score change.
-
-## Future Scope
-
-- Connectors for Wiz, ServiceNow, Splunk, Microsoft Sentinel, Palo Alto, Check Point, AWS Security Groups, Azure NSGs, Jira, and Tenable / Qualys.
-- Automated pull requests for infrastructure-as-code firewall changes.
-- Approval workflow and RBAC.
-- Asset owner notification.
-- LLM-assisted natural language executive briefings.
-- Continuous attack path drift monitoring.
-- Real-time validation from SIEM/firewall APIs.
-
-## Product Principles
-
-- Risk reduction over vulnerability counting.
-- Transparent degradation, never silent suppression.
-- Compensating controls must be evidence-backed.
-- Business context matters as much as CVSS.
-- Patch when required, compensate when justified, accept only with governance.
-
-## Success Metrics
-
-- 60% reduction in management-facing vulnerability volume through grouping and path-based prioritization.
-- 30% reduction in critical exploitable attack paths within 90 days.
-- 90% of downgraded findings have complete evidence, owner, and expiry metadata.
-- Mean time to risk reduction decreases by 40% compared with patch-only remediation.
-- 100% of critical internet-exposed exploitable vulnerabilities remain patch-mandatory unless a strong compensating control is approved.
-
-## Data Model
-
-### Finding
-
-ID, CVE or weakness, asset, business service, raw severity, CVSS, exploitability, exposure, privilege context, lateral movement potential, existing controls, and source system.
-
-### Attack Path
-
-ID, entry asset, intermediate assets or identities, target service, techniques, findings, blast radius, and recommended breakpoints.
-
-### Control
-
-Type, description, owner, effort, expected reduction, evidence requirement, expiry, and approval status.
-
-### Risk Decision
-
-Inherent score, residual score, original severity, residual severity, degradation rationale, linked controls, approver, and review date.
-
-## MVP Acceptance Criteria
-
-- A user can see raw vulnerabilities grouped into attack paths.
-- A user can choose recommended controls and see residual severity change.
-- The product clearly distinguishes patch-required items from compensating-control candidates.
-- The management view explains reduced risk without hiding original vulnerability volume.
-- The codebase includes reusable risk scoring logic with tests.
-- The product can run locally with a single install and start command.
+- The product displays CRVM findings grouped by attack path.
+- The product compares CRVM-only signals against Wiz-visible signals.
+- The product includes connector state for Wiz, ServiceNow, Splunk, Microsoft Sentinel, Palo Alto, Check Point, AWS Security Groups, Azure NSGs, Jira, Tenable, and Qualys.
+- The product shows IaC pull request references for applicable controls.
+- The product shows approval status, RBAC requester/approver roles, and SLA.
+- The product shows owner notifications and delivery status.
+- The product generates an executive brief from current risk and control context.
+- The product shows drift and validation state by source system.
+- Tests cover downgrade guardrails and enterprise workflow data.
