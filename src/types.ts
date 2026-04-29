@@ -6,6 +6,7 @@ export type ControlType =
   | "SIEM"
   | "EDR"
   | "IAM"
+  | "Virtual Patch"
   | "Configuration"
   | "Risk Acceptance";
 
@@ -123,4 +124,33 @@ export interface ExecutiveBrief {
   headline: string;
   narrative: string;
   talkingPoints: string[];
+}
+
+export interface VirtualPatchPlan {
+  id: string;
+  cve: string;
+  asset: string;
+  enforcementPoint: "WAF" | "IPS" | "RASP" | "API Gateway" | "EDR";
+  ruleName: string;
+  mode: "Monitor" | "Block" | "Exception";
+  confidence: number;
+  falsePositiveRisk: "Low" | "Medium" | "High";
+  rollbackPlan: string;
+  expiry: string;
+}
+
+export interface EvidencePack {
+  id: string;
+  title: string;
+  owner: string;
+  completeness: number;
+  artifacts: string[];
+}
+
+export interface SlaInsight {
+  id: string;
+  queue: string;
+  atRisk: number;
+  breached: number;
+  nextAction: string;
 }
