@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { approvalDecisions, attackPaths, connectors, driftSignals, evidencePacks, executiveBrief, ownerNotifications, slaInsights, virtualPatchPlans } from "./data";
+import { executiveReports, ingestionRuns, remediationTickets } from "./productModules";
 import { calculateInherentScore, calculateResidualRisk, scoreToSeverity, selectedControlsForFinding, summarizePortfolio } from "./riskEngine";
 
 describe("risk engine", () => {
@@ -86,5 +87,11 @@ describe("risk engine", () => {
     expect(virtualPatchPlans.some((plan) => plan.mode === "Block")).toBe(true);
     expect(evidencePacks.some((pack) => pack.completeness >= 80)).toBe(true);
     expect(slaInsights.some((insight) => insight.breached > 0)).toBe(true);
+  });
+
+  it("includes full product operations modules", () => {
+    expect(remediationTickets.some((ticket) => ticket.system === "ServiceNow")).toBe(true);
+    expect(ingestionRuns.every((run) => run.normalized <= run.records)).toBe(true);
+    expect(executiveReports.some((report) => report.audience === "Board")).toBe(true);
   });
 });
