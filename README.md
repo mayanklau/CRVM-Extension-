@@ -13,6 +13,8 @@ Production-grade product for extending EY CRVM from vulnerability counting into 
 - Includes approval workflow, RBAC roles, owner notifications, LLM-assisted executive briefs, drift monitoring, and real-time validation states.
 - Adds virtual patching for WAF, IPS, API gateway, RASP, and EDR shielding when patch windows cannot move fast enough.
 - Produces evidence packs and SLA heat insights so leaders can see which mitigations are proven, expiring, or overdue.
+- Adds a multi-view product shell with Command, Workbench, Governance, Integrations, and Reports views.
+- Includes ingestion pipeline status, remediation ticket queues, report packs, role context, search, and operating actions.
 
 ## Product Modules
 
@@ -25,6 +27,9 @@ Production-grade product for extending EY CRVM from vulnerability counting into 
 - Asset owner notification queue
 - Evidence pack builder
 - SLA heat and escalation view
+- Ingestion pipeline monitor
+- Remediation work queue
+- Board, audit, CISO, and operations report packs
 - Executive brief generator
 - Continuous drift and validation monitor
 
