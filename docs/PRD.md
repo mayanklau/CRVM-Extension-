@@ -21,6 +21,13 @@ CRVM Attack Path Control Center turns CRVM into a control orchestration layer. I
 - Prevents permanent closure for internet-exposed critical exploited findings unless patched.
 - Shows compensating-control candidates when exploitability or blast radius can be materially reduced.
 
+### Product Workbench
+
+- Provides Command, Workbench, Governance, Integrations, and Reports views.
+- Supports role context for CISO, vulnerability manager, SOC engineer, network engineer, and application owner.
+- Includes search across attack paths, assets, and services.
+- Provides operating actions for executive brief export and change creation.
+
 ### Connector Control Plane
 
 Built connector coverage for Wiz, ServiceNow, Splunk, Microsoft Sentinel, Palo Alto, Check Point, AWS Security Groups, Azure NSGs, Jira, Tenable, and Qualys. Each connector tracks status, last sync, coverage, and capability so the platform can show whether a risk decision is backed by current evidence.
@@ -61,6 +68,23 @@ Built connector coverage for Wiz, ServiceNow, Splunk, Microsoft Sentinel, Palo A
 - Recommends next action for each queue so operating teams know where to focus.
 - Helps management distinguish blocked patch work from fast compensating-control progress.
 
+### Ingestion Pipeline Monitor
+
+- Shows ingestion health for EY CRVM, Wiz, Tenable, and Qualys.
+- Tracks received, normalized, and rejected records so data quality issues are visible.
+- Separates connector health from data normalization health.
+
+### Remediation Work Queue
+
+- Shows ServiceNow and Jira remediation tickets with owner, priority, status, and due date.
+- Tracks blocked changes and ready-to-close items so operational teams can work directly from the product.
+
+### Report Packs
+
+- Produces board, audit, CISO, and operations report packs.
+- Each report pack shows audience, readiness, and included sections.
+- Keeps evidence completeness visible before an audit or board pack is treated as ready.
+
 ### LLM-Assisted Executive Brief
 
 - Generates a management-ready narrative explaining what risk was reduced, what remains patch-mandatory, and why CRVM volume is being converted into attack-path actions.
@@ -77,17 +101,6 @@ Built connector coverage for Wiz, ServiceNow, Splunk, Microsoft Sentinel, Palo A
 - Models real-time validation from SIEM and firewall APIs through connector status, last sync, control evidence, and drift events.
 - Separates selected controls from validated controls so management cannot confuse intent with implemented risk reduction.
 
-## Target Users
-
-- CISO: needs an executive view of risk reduction and governance.
-- Vulnerability manager: needs path-based prioritization and defensible residual severity.
-- SOC engineer: needs detection-rule changes and validation evidence.
-- Network security engineer: needs firewall and segmentation breakpoints.
-- AppSec engineer: needs WAF, IPS, API gateway, RASP, and EDR virtual patch plans.
-- Cloud platform engineer: needs AWS Security Group, Azure NSG, and IAM change tracking.
-- Application owner: needs approval tasks, patch obligations, and exception context.
-- Auditor / risk committee: needs evidence, owner, expiry, approval, and validation trail.
-
 ## Core Workflows
 
 1. Ingest CRVM, Wiz, Tenable, and Qualys findings.
@@ -98,9 +111,12 @@ Built connector coverage for Wiz, ServiceNow, Splunk, Microsoft Sentinel, Palo A
 6. Route approvals using RBAC policy.
 7. Notify asset owners through ticketing or collaboration channels.
 8. Build evidence packs and SLA escalation views.
-9. Validate controls through SIEM/firewall/cloud connector evidence.
-10. Recalculate residual severity and executive impact.
-11. Monitor for drift and reopen risk if controls degrade.
+9. Triage remediation tickets in the Workbench view.
+10. Monitor ingestion quality in the Integrations view.
+11. Generate board, audit, and operations report packs.
+12. Validate controls through SIEM/firewall/cloud connector evidence.
+13. Recalculate residual severity and executive impact.
+14. Monitor for drift and reopen risk if controls degrade.
 
 ## Acceptance Criteria
 
@@ -112,6 +128,10 @@ Built connector coverage for Wiz, ServiceNow, Splunk, Microsoft Sentinel, Palo A
 - The product shows approval status, RBAC requester/approver roles, and SLA.
 - The product shows owner notifications and delivery status.
 - The product shows evidence-pack completeness and SLA heat.
+- The product includes ingestion pipeline monitoring.
+- The product includes ServiceNow/Jira remediation work queues.
+- The product includes board, audit, CISO, and operations report packs.
+- The product supports multi-view navigation and role context.
 - The product generates an executive brief from current risk and control context.
 - The product shows drift and validation state by source system.
-- Tests cover downgrade guardrails, virtual patching behavior, and enterprise workflow data.
+- Tests cover downgrade guardrails, virtual patching behavior, product operations modules, and enterprise workflow data.
